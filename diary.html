@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📔 我的日记本</title>
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<style>
+:root {
+  --bg-body: #f5f0e8; --bg-sidebar: #faf6ef; --bg-main: #fdfaf5;
+  --bg-editor: #fffdf9; --bg-preview: #fffcf7; --bg-card: #fffcf7;
+  --text-primary: #3d3229; --text-secondary: #8a7a6a; --text-muted: #b8a99a;
+  --border-color: #e8ddd0; --border-soft: #f0e8dd;
+  --accent: #c9a96e; --accent-hover: #b89555; --accent-light: #f5ede1;
+  --shadow: rgba(0,0,0,0.06); --divider: #e8ddd0;
+  --code-bg: #f5f0e8; --blockquote-border: #c9a96e;
+  --timeline-dot: #d4c5ae; --month-header: #a0917e;
+  --settings-bg: #fffcf7; --overlay-bg: rgba(0,0,0,0.3);
+  --danger: #c0392b; --danger-hover: #a93226;
+  --font-family: Georgia, "Noto Serif SC", serif;
+  --font-editor: Georgia, "Noto Serif SC", serif;
+}
+[data-theme="bluegray"] {
+  --bg-body:#eef1f5; --bg-sidebar:#f4f6f9; --bg-main:#f8f9fc;
+  --bg-editor:#fbfdff; --bg-preview:#fbfdff; --bg-card:#fbfdff;
+  --text-primary:#2c3e50; --text-secondary:#7f8c9b; --text-muted:#b0bcc8;
+  --border-color:#d5dee8; --border-soft:#e2e9f0;
+  --accent:#7a9eb3; --accent-hover:#5f8aa3; --accent-light:#e8eff5;
+  --code-bg:#eef1f5; --blockquote-border:#7a9eb3;
+  --timeline-dot:#b0c4d4; --month-header:#7f8c9b;
+  --settings-bg:#fbfdff; --overlay-bg:rgba(0,0,0,0.25);
+  --danger:#c0392b; --danger-hover:#a93226;
+  --divider:#d5dee8; --shadow:rgba(0,0,0,0.05);
+}
+[data-theme="sakura"] {
+  --bg-body:#f8f0f2; --bg-sidebar:#faf4f6; --bg-main:#fdf8fa;
+  --bg-editor:#fffbfc; --bg-preview:#fffbfc; --bg-card:#fffbfc;
+  --text-primary:#4a3540; --text-secondary:#9a7d88; --text-muted:#c4aeb6;
+  --border-color:#ecd9e0; --border-soft:#f2e4e9;
+  --accent:#d4a0b0; --accent-hover:#c08094; --accent-light:#f5eaee;
+  --code-bg:#f8f0f2; --blockquote-border:#d4a0b0;
+  --timeline-dot:#d4b6c0; --month-header:#9a7d88;
+  --settings-bg:#fffbfc; --overlay-bg:rgba(0,0,0,0.25);
+  --danger:#c0392b; --danger-hover:#a93226;
+  --divider:#ecd9e0; --shadow:rgba(0,0,0,0.04);
+}
+[data-theme="dark"] {
+  --bg-body:#1a1a2e; --bg-sidebar:#1f1f35; --bg-main:#242440;
+  --bg-editor:#2a2a4a; --bg-preview:#2a2a4a; --bg-card:#2a2a4a;
+  --text-primary:#e8e4f0; --text-secondary:#a8a0c0; --text-muted:#706888;
+  --border-color:#3a3a5a; --border-soft:#333355;
+  --accent:#9b8ec4; --accent-hover:#b0a4d4; --accent-light:#2f2f50;
+  --code-bg:#1f1f35; --blockquote-border:#9b8ec4;
+  --timeline-dot:#605888; --month-header:#a8a0c0;
+  --settings-bg:#2a2a4a; --overlay-bg:rgba(0,0,0,0.5);
+  --danger:#e74c3c; --danger-hover:#c0392b;
+  --divider:#3a3a5a; --shadow:rgba(0,0,0,0.2);
+}* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: var(--font-family); background: var(--bg-body); color: var(--text-primary); height: 100vh; overflow: hidden; transition: background .4s, color .4s; }
+.app { display: flex; height: 100vh; max-width: 1400px; margin: 0 auto; background: var(--bg-main); box-shadow: 0 0 40px var(--shadow); transition: background .4s; }
+.sidebar { width: 260px; min-width: 260px; background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; overflow: hidden; transition: background .4s, border-color .4s; }
+.sh { padding: 20px 18px 14px; border-bottom: 1px solid var(--border-color); }
+.sh h1 { font-size: 15px; color: var(--text-primary); font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 6px; }
+.sh h1:hover { opacity: .8; }
+.sa { display: flex; gap: 6px; margin-top: 10px; }
+.sa button, .sba button { flex: 1; padding: 6px 8px; border: 1px solid var(--border-color); border-radius: 6px; background: transparent; color: var(--text-secondary); font-size: 12px; cursor: pointer; font-family: inherit; transition: all .25s; }
+.sa button:hover, .sba button:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent-hover); }
+.sba { padding: 10px 18px 14px; border-top: 1px solid var(--border-color); display: flex; gap: 6px; }
+.tl { flex: 1; overflow-y: auto; padding: 12px 0; scrollbar-width: thin; }
+.tl::-webkit-scrollbar { width: 5px; }
+.tl::-webkit-scrollbar-thumb { background: var(--timeline-dot); border-radius: 3px; }
+.yg { margin-bottom: 8px; }
+.yh { padding: 6px 18px 4px; font-size: 13px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px; }
+.mg { margin-bottom: 2px; }
+.mh { padding: 4px 18px 4px 28px; font-size: 12px; font-weight: 600; color: var(--month-header); }
+.ti { padding: 5px 18px 5px 44px; cursor: pointer; position: relative; font-size: 13px; color: var(--text-secondary); transition: all .25s; animation: fi .35s ease both; border-left: 3px solid transparent; }
+.ti::before { content: ""; position: absolute; left: 36px; top: 50%; width: 5px; height: 5px; border-radius: 50%; background: var(--timeline-dot); transform: translateY(-50%); }
+.ti:hover { background: var(--accent-light); color: var(--text-primary); }
+.ti.on { color: var(--accent-hover); font-weight: 600; border-left-color: var(--accent); background: var(--accent-light); }
+.ti.on::before { background: var(--accent); }
+.ti .dl { font-size: 12px; }
+.ti .ep { font-size: 11px; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 180px; margin-top: 1px; }
+@keyframes fi { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+.ma { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+.tb { padding: 16px 28px 12px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid var(--border-color); }
+.tbl { display: flex; align-items: center; gap: 12px; }
+.tbl h2 { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+.tbr { display: flex; gap: 8px; align-items: center; }
+.tbr button { padding: 6px 14px; border: 1px solid var(--border-color); border-radius: 6px; background: transparent; color: var(--text-secondary); font-size: 12px; cursor: pointer; font-family: inherit; transition: all .25s; }
+.tbr button:hover { background: var(--accent-light); border-color: var(--accent); color: var(--accent-hover); }
+.tbr .db { color: var(--danger); border-color: transparent; }
+.tbr .db:hover { background: var(--danger); color: #fff; border-color: var(--danger); }
+.bi { width: 32px; height: 32px; padding: 0 !important; display: flex; align-items: center; justify-content: center; font-size: 16px !important; }
+.ca { flex: 1; overflow-y: auto; padding: 24px 28px 32px; scrollbar-width: thin; }
+.ca::-webkit-scrollbar { width: 6px; }
+.ca::-webkit-scrollbar-thumb { background: var(--timeline-dot); border-radius: 3px; }
+.ec { display: flex; flex-direction: column; height: 100%; }
+.ed { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; font-style: italic; }
+.et { flex: 1; width: 100%; min-height: 400px; padding: 20px 24px; border: 1px solid var(--border-soft); border-radius: 8px; background: var(--bg-editor); color: var(--text-primary); font-family: var(--font-editor); font-size: 15px; line-height: 1.85; resize: none; outline: none; box-shadow: inset 0 1px 4px var(--shadow); }
+.et:focus { border-color: var(--accent); box-shadow: inset 0 1px 4px var(--shadow), 0 0 0 3px var(--accent-light); }
+.et::placeholder { color: var(--text-muted); font-style: italic; }
+.pd { font-size: 14px; color: var(--text-secondary); margin-bottom: 20px; font-style: italic; }
+.pc { background: var(--bg-preview); padding: 24px 28px; border-radius: 8px; border: 1px solid var(--border-soft); line-height: 1.9; font-size: 15px; min-height: 300px; }
+.es { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-muted); text-align: center; }
+.es .ic { font-size: 56px; margin-bottom: 16px; opacity: .5; }
+.es h3 { font-size: 18px; color: var(--text-secondary); margin-bottom: 8px; }
+.es p { font-size: 13px; max-width: 280px; line-height: 1.6; }
+.pc h1 { font-size: 26px; font-weight: 700; margin: 24px 0 14px; padding-bottom: 8px; border-bottom: 2px solid var(--divider); }
+.pc h2 { font-size: 22px; font-weight: 600; margin: 20px 0 10px; padding-bottom: 6px; border-bottom: 1px solid var(--divider); }
+.pc h3 { font-size: 18px; font-weight: 600; margin: 18px 0 8px; }
+.pc p { margin: 10px 0; line-height: 1.9; }
+.pc ul, .pc ol { margin: 10px 0; padding-left: 28px; }
+.pc li { margin: 4px 0; }
+.pc blockquote { margin: 14px 0; padding: 10px 18px; border-left: 4px solid var(--accent); background: var(--accent-light); border-radius: 0 6px 6px 0; color: var(--text-secondary); font-style: italic; }
+.pc code { font-family: Consolas, "Courier New", monospace; font-size: 13px; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; }
+.pc pre { margin: 14px 0; padding: 16px 20px; background: var(--code-bg); border-radius: 8px; overflow-x: auto; border: 1px solid var(--border-soft); }
+.pc pre code { background: transparent; padding: 0; border-radius: 0; }
+.pc hr { margin: 24px 0; border: none; height: 1px; background: var(--divider); }
+.pc a { color: var(--accent); text-decoration: none; }
+.pc a:hover { color: var(--accent-hover); text-decoration: underline; }
+.pc th, .pc td { padding: 8px 14px; border: 1px solid var(--border-color); text-align: left; }
+.pc th { background: var(--accent-light); font-weight: 600; }
+.pc table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+.so { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); z-index: 1000; backdrop-filter: blur(2px); }
+.so.sh { display: flex; align-items: center; justify-content: center; }
+.sp { background: var(--bg-card); border-radius: 14px; padding: 28px 32px; width: 440px; max-height: 80vh; overflow-y: auto; box-shadow: 0 12px 40px rgba(0,0,0,0.15); }
+.shd { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; }
+.shd h3 { font-size: 18px; color: var(--text-primary); }
+.sx { width: 30px; height: 30px; border: none; background: transparent; font-size: 22px; cursor: pointer; color: var(--text-muted); border-radius: 6px; }
+.sx:hover { background: var(--accent-light); color: var(--text-primary); }
+.sg { margin-bottom: 22px; }
+.sg label { display: block; font-size: 13px; font-weight: 600; color: var(--text-secondary); margin-bottom: 8px; }
+.tg, .fg { display: flex; flex-wrap: wrap; gap: 6px; }
+.to, .fo, .so2, .mo { padding: 8px 12px; border: 2px solid var(--border-color); border-radius: 8px; cursor: pointer; text-align: center; font-size: 12px; color: var(--text-secondary); transition: all .25s; background: transparent; font-family: inherit; margin: 0; }
+.to:hover, .fo:hover, .so2:hover, .mo:hover { border-color: var(--accent); background: var(--accent-light); }
+.to.on, .fo.on, .so2.on, .mo.on { border-color: var(--accent); background: var(--accent-light); color: var(--accent-hover); font-weight: 600; }
+.sg select, .sg input[type=text] { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 6px; background: var(--bg-editor); color: var(--text-primary); font-family: inherit; font-size: 13px; outline: none; }
+.sg select:focus, .sg input[type=text]:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-light); }
+.co { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: var(--overlay-bg); z-index: 1100; backdrop-filter: blur(2px); }
+.co.sh { display: flex; align-items: center; justify-content: center; }
+.cd { background: var(--bg-card); border-radius: 12px; padding: 24px 28px; width: 340px; box-shadow: 0 12px 40px rgba(0,0,0,0.15); text-align: center; }
+.cd p { font-size: 15px; color: var(--text-primary); margin-bottom: 20px; }
+.cd .ca2 { display: flex; gap: 10px; justify-content: center; }
+.cd button { padding: 8px 22px; border: 1px solid var(--border-color); border-radius: 6px; font-size: 13px; cursor: pointer; font-family: inherit; background: transparent; color: var(--text-secondary); }
+.cd button:hover { background: var(--accent-light); }
+.cd .cy { background: var(--danger); color: #fff; border-color: var(--danger); }
+.cd .cy:hover { background: var(--danger-hover); border-color: var(--danger-hover); }
+.tt { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(80px); background: var(--text-primary); color: var(--bg-body); padding: 10px 24px; border-radius: 8px; font-size: 13px; opacity: 0; transition: all .4s; z-index: 2000; pointer-events: none; white-space: nowrap; }
+.tt.sh { opacity: 1; transform: translateX(-50%) translateY(0); }
+@media (max-width: 768px) { .sidebar { position: fixed; top: 0; left: -280px; width: 280px; height: 100vh; z-index: 999; transition: left 0.3s ease; box-shadow: 2px 0 20px rgba(0,0,0,0.15); background: var(--bg-sidebar); } .sidebar.show { left: 0; } .sp { width: 90%; padding: 20px; } .ca { padding: 16px; } .tb { padding: 12px 16px; flex-wrap: wrap; } .mb { display: flex !important; } .tbl h2 { font-size: 14px; } .tbr button { padding: 4px 10px; font-size: 11px; } .ti { padding: 5px 18px 5px 36px; } .ti::before { left: 28px; } .mh { padding-left: 22px; } }
+</style>
+</head>
+<body>
+<div class="app">
+<div class="sidebar">
+<div class="sh"><h1 id="nt" onclick="enn()">📔 我的日记本</h1><div class="sa"><button onclick="nd()">✏️ 写日记</button></div></div>
+<div class="tl" id="tl"></div>
+<div class="sba"><button onclick="ts()" id="sb">📅 倒序</button><button class="bi" onclick="os()" title="设置">⚙️</button></div>
+</div>
+<div class="ma">
+<div class="tb"><button class="mb" onclick="togSidebar()" id="mbBtn">☰</button><div class="tbl"><h2 id="tt2">📝 日记</h2></div><div class="tbr" id="tba2" style="display:none"><button id="mtb" onclick="tm()">👁 预览</button><button class="db" onclick="cdel()">🗑 删除</button></div></div>
+<div class="ca" id="ca">
+<div class="es" id="es"><div class="ic">📖</div><h3>还没有日记</h3><p>点左侧「写日记」按钮，记录今天的心情吧 ✨</p></div>
+<div class="ec" id="ec2" style="display:none"><div class="ed" id="ed2"></div><textarea class="et" id="et2" placeholder="用 Markdown 写下你的想法…&#10;&#10;支持：# 标题、**加粗**、*斜体*、> 引用、- 列表、&#96;&#96;&#96;代码块&#96;&#96;&#96;--- 分割线"></textarea></div>
+<div class="pc" id="pc2" style="display:none"><div class="pd" id="pd2"></div><div class="pc" id="pc3"></div></div>
+</div>
+</div>
+</div>
+<div class="so" id="so">
+<div class="sp">
+<div class="shd"><h3>⚙️ 设置</h3><button class="sx" onclick="cs()">×</button></div>
+<div class="sg"><label>🎨 主题色</label><div class="tg" id="tg"></div></div>
+<div class="sg"><label>📝 正文字体</label><div class="fg" id="fg"></div></div>
+<div class="sg"><label>📅 日记排序</label><div class="fg" id="fg2"></div></div>
+<div class="sg"><label>👁 默认编辑模式</label><div class="fg" id="fg3"></div></div>
+<div class="sg"><label>📆 日期格式</label><select id="dfs" onchange="sdf(this.value)"><option value="cn">YYYY年MM月DD日</option><option value="iso">YYYY-MM-DD</option><option value="us">MM/DD/YYYY</option></select></div>
+<div class="sg"><label>📓 日记本名称</label><input type="text" id="nni" placeholder="输入日记本名称" onchange="snn(this.value)"></div>
+</div>
+</div>
+<div class="co" id="co"><div class="cd"><p id="cm">确定要删除这篇日记吗？</p><div class="ca2"><button onclick="cc()">取消</button><button class="cy" onclick="exd()">确定删除</button></div></div></div>
+<div class="tt" id="tt"></div>
+<script>var D={},CI=null,IE=true,S={t:"warm",f:"serif",s:"desc",dm:"edit",df:"cn",nn:"我的日记本"};
+var VS=document.documentElement.style;
+function init(){lS();lD();aT(S.t);aF(S.f);aUI();rT();if(!CI)shE();}
+function lD(){try{var d=localStorage.getItem("d");D=d?JSON.parse(d):{}}catch(e){D={}}}
+function sD(){localStorage.setItem("d",JSON.stringify(D));}
+function lS(){try{var d=localStorage.getItem("s2");if(d){var s=JSON.parse(d);for(var k in s)S[k]=s[k]}}catch(e){}}
+function sS(){localStorage.setItem("s2",JSON.stringify(S));}
+function gTK(){var n=new Date();return n.getFullYear()+"-"+String(n.getMonth()+1).padStart(2,"0")+"-"+String(n.getDate()).padStart(2,"0");}
+var TH=[["warm","暖阳米白","#f5f0e8"],["bluegray","静谧蓝灰","#eef1f5"],["sakura","樱花淡粉","#f8f0f2"],["dark","深夜暗黑","#1a1a2e"]];
+var FH=[["serif","手写体"],["song","宋体"],["kai","楷体"]];
+
+function buildSettingsUI(){
+  var h='';
+  for(var i=0;i<TH.length;i++){
+    h+='<button class="to" data-t="'+TH[i][0]+'" onclick="st(\''+TH[i][0]+'\')"><span style="display:inline-block;width:14px;height:14px;border-radius:50%;background:'+TH[i][2]+';vertical-align:middle;margin-right:4px"></span>'+TH[i][1]+'</button>';
+  }
+  document.getElementById('tg').innerHTML=h;
+  h='';
+  for(var i=0;i<FH.length;i++){
+    h+='<button class="fo" data-f="'+FH[i][0]+'" onclick="sf(\''+FH[i][0]+'\')">'+FH[i][1]+'</button>';
+  }
+  document.getElementById('fg').innerHTML=h;
+  document.getElementById('fg2').innerHTML='<button class="so2" data-s="desc" onclick="ss(\'desc\')">🆕 新到旧</button><button class="so2" data-s="asc" onclick="ss(\'asc\')">🕰 旧到新</button>';
+  document.getElementById('fg3').innerHTML='<button class="mo" data-m="edit" onclick="sdm(\'edit\')">✏️ 编辑模式</button><button class="mo" data-m="preview" onclick="sdm(\'preview\')">👁 预览模式</button>';
+}
+
+function st(t){S.t=t;sS();aT(t);var e=document.querySelectorAll("#tg .to");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-t")===t?"to on":"to";}
+function aT(t){if(t==="warm")document.documentElement.removeAttribute("data-theme");else document.documentElement.setAttribute("data-theme",t);}
+function sf(f){S.f=f;sS();aF(f);var e=document.querySelectorAll("#fg .fo");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-f")===f?"fo on":"fo";}
+function aF(f){var x;if(f==="serif")x='Georgia,"Noto Serif SC",serif';else if(f==="song")x='SimSun,STSong,"Noto Serif SC",serif';else x='KaiTi,STKaiti,"Noto Serif SC",serif';VS.setProperty("--font-family",x);VS.setProperty("--font-editor",x);}
+function ss(sv){S.s=sv;sS();var e=document.querySelectorAll("#fg2 .so2");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-s")===sv?"so2 on":"so2";uSB();rT();}
+function ts(){ss(S.s==="desc"?"asc":"desc");}
+function uSB(){document.getElementById("sb").textContent=S.s==="desc"?"📅 倒序":"📅 正序";}
+function sdm(mv){S.dm=mv;sS();var e=document.querySelectorAll("#fg3 .mo");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-m")===mv?"mo on":"mo";}
+function sdf(fv){S.df=fv;sS();if(CI)uCD();rT();}
+function fD(s,fv){fv=fv||S.df;if(!s)return"";var p=s.split("-");if(p.length<3)return s;switch(fv){case"cn":return p[0]+"年"+p[1]+"月"+p[2]+"日";case"iso":return p[0]+"-"+p[1]+"-"+p[2];case"us":return p[1]+"/"+p[2]+"/"+p[0];default:return p[0]+"-"+p[1]+"-"+p[2];}}
+function fMK(ym){var a=ym.split("-");switch(S.df){case"cn":return a[0]+"年"+parseInt(a[1])+"月";case"iso":return ym;case"us":return a[1]+"/"+a[0];default:return a[0]+"年"+parseInt(a[1])+"月";}}
+function snn(nv){if(nv.trim()){S.nn=nv.trim();sS();uNT();}}
+function uNT(){document.getElementById("nt").textContent="📔 "+S.nn;}
+function enn(){document.getElementById("nni").value=S.nn;os();setTimeout(function(){document.getElementById("nni").focus();},300);}
+function aUI(){buildSettingsUI();var e;e=document.querySelectorAll("#tg .to");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-t")===S.t?"to on":"to";e=document.querySelectorAll("#fg .fo");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-f")===S.f?"fo on":"fo";e=document.querySelectorAll("#fg2 .so2");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-s")===S.s?"so2 on":"so2";e=document.querySelectorAll("#fg3 .mo");for(var i=0;i<e.length;i++)e[i].className=e[i].getAttribute("data-m")===S.dm?"mo on":"mo";document.getElementById("dfs").value=S.df;document.getElementById("nni").value=S.nn;uNT();uSB();}
+function eH(t){var d=document.createElement("div");d.textContent=t;return d.innerHTML;}
+function rT(){var ct=document.getElementById("tl");var ks=Object.keys(D);if(ks.length===0){ct.innerHTML='<div style="padding:30px 18px;text-align:center;color:var(--text-muted);font-size:13px;">暂无日记，点上方写日记 ✨</div>';return;}var sd=ks.slice().sort();if(S.s==="desc")sd.reverse();var yg={};for(var i=0;i<sd.length;i++){var k=sd[i];var ym=k.substring(0,7);var y=k.substring(0,4);if(!yg[y])yg[y]={};if(!yg[y][ym])yg[y][ym]=[];yg[y][ym].push(k);}var yrs=Object.keys(yg).sort();if(S.s==="desc")yrs.reverse();var h="";var ii=0;for(var yi=0;yi<yrs.length;yi++){var yr=yrs[yi];var ms=Object.keys(yg[yr]).sort();if(S.s==="desc")ms.reverse();h+='<div class="yg"><div class="yh">'+yr+'</div>';for(var mi=0;mi<ms.length;mi++){var mm=ms[mi];h+='<div class="mg"><div class="mh">'+fMK(mm)+'</div>';var dk=yg[yr][mm];for(var di=0;di<dk.length;di++){var ky=dk[di];var ct2=D[ky]||"";var fl=ct2.split(/\r?\n/)[0]||"无标题";var tp=fl.replace(/^#+\s*/,"").substring(0,22);var ac=ky===CI?" on":"";h+='<div class="ti'+ac+'" onclick="sd(\''+ky+'\')" style="animation-delay:'+(ii*0.03)+'s">';h+='<div class="dl">'+fD(ky)+'</div><div class="ep">'+eH(tp||"(空)")+'</div></div>';ii++;}h+='</div>';}h+='</div>';}ct.innerHTML=h;}
+
+function sd(id){if(CI){var c=document.getElementById("et2").value;if(c.trim()){D[CI]=c;sD();}}CI=id;var ct=D[id]||"";document.getElementById("et2").value=ct;document.getElementById("ed2").textContent="📅 "+fD(id);document.getElementById("pd2").textContent="📅 "+fD(id);document.getElementById("tt2").textContent="📝 "+fD(id);document.getElementById("tba2").style.display="flex";document.getElementById("es").style.display="none";IE=S.dm==="edit";aM();rP(ct);rT();}
+function nd(){if(CI){var c=document.getElementById("et2").value;if(c.trim()){D[CI]=c;sD();}}var ky=gTK();if(!D[ky]){D[ky]="";sD();}CI=ky;document.getElementById("et2").value="";document.getElementById("ed2").textContent="📅 "+fD(ky);document.getElementById("pd2").textContent="📅 "+fD(ky);document.getElementById("tt2").textContent="📝 "+fD(ky);document.getElementById("tba2").style.display="flex";document.getElementById("es").style.display="none";IE=S.dm==="edit";aM();rP("");rT();setTimeout(function(){document.getElementById("et2").focus();},100);shT("📝 新建日记");}
+function tm(){if(IE&&CI){var c=document.getElementById("et2").value;D[CI]=c;sD();rP(c);}IE=!IE;aM();}
+function aM(){document.getElementById("ec2").style.display=IE?"flex":"none";document.getElementById("pc2").style.display=IE?"none":"block";document.getElementById("mtb").textContent=IE?"👁 预览":"✏️ 编辑";}
+function rP(ct){if(!ct||!ct.trim()){document.getElementById("pc3").innerHTML='<p style="color:var(--text-muted);font-style:italic;">（空日记）</p>';return;}try{document.getElementById("pc3").innerHTML=marked.parse(ct,{breaks:true,gfm:true});}catch(e){document.getElementById("pc3").innerHTML='<p style="color:var(--danger);">渲染出错</p>';}}
+var PD=null;
+function cdel(){if(!CI)return;PD=CI;document.getElementById("cm").textContent="确定要删除 "+fD(CI)+" 的日记吗？";document.getElementById("co").classList.add("sh");}
+function cc(){document.getElementById("co").classList.remove("sh");PD=null;}
+function exd(){if(PD&&D[PD]!==undefined){delete D[PD];sD();CI=null;rT();shE();shT("🗑 已删除");}cc();}
+function shE(){document.getElementById("es").style.display="flex";document.getElementById("ec2").style.display="none";document.getElementById("pc2").style.display="none";document.getElementById("tba2").style.display="none";document.getElementById("tt2").textContent="📝 日记";}
+var AT=null;
+function sAT(){clearInterval(AT);AT=setInterval(function(){if(CI&&IE){var c=document.getElementById("et2").value;if(c!==(D[CI]||"")){D[CI]=c;sD();rT();}}},3000);}
+function uCD(){if(!CI)return;document.getElementById("ed2").textContent="📅 "+fD(CI);document.getElementById("pd2").textContent="📅 "+fD(CI);document.getElementById("tt2").textContent="📝 "+fD(CI);}
+function os(){document.getElementById("so").classList.add("sh");document.getElementById("nni").value=S.nn;}
+function cs(){syncToken();document.getElementById("so").classList.remove("sh");}
+function shT(m){var el=document.getElementById("tt");el.textContent=m;el.classList.add("sh");clearTimeout(el._to);el._to=setTimeout(function(){el.classList.remove("sh");},2200);}function togSidebar(){var s=document.querySelector(".sidebar");s.classList.toggle("show");}
+document.getElementById("so").addEventListener("click",function(e){if(e.target===this)cs();});
+document.getElementById("co").addEventListener("click",function(e){if(e.target===this)cc();});
+document.querySelector(".ma").addEventListener("click",function(e){if(window.innerWidth<=768){var s=document.querySelector(".sidebar");if(s&&s.classList.contains("show")){var t=e.target;while(t){if(t.classList&&t.classList.contains("sidebar"))return;t=t.parentElement}s.classList.remove("show");}}});document.getElementById("et2").addEventListener("input",function(){if(CI)rP(this.value);});
+document.addEventListener("keydown",function(e){if((e.ctrlKey||e.metaKey)&&e.key==="s"){e.preventDefault();if(CI){var c=document.getElementById("et2").value;D[CI]=c;sD();rT();shT("💾 已保存");}}if(e.key==="Escape"){cs();cc();}if((e.ctrlKey||e.metaKey)&&e.shiftKey&&(e.key==="p"||e.key==="P")){e.preventDefault();if(CI)tm();}});
+
+function getGistId(){return S.gistId||null}
+function getGhToken(){var el=document.getElementById("ghToken");return el?el.value:""}
+function saveGistId(id){S.gistId=id;sS()}
+function syncToken(){var el=document.getElementById("ghToken");if(el&&el.value.trim()){S.ghToken=el.value.trim();sS()}}
+function restoreToken(){var el=document.getElementById("ghToken");if(el&&S.ghToken)el.value=S.ghToken}
+function uploadToGist(){syncToken();var tk=getGhToken();if(!tk){showToast("请先输入 GitHub Token");return}var data=JSON.stringify(D);var id=getGistId();var url=id?"https://api.github.com/gists/"+id:"https://api.github.com/gists";var method=id?"PATCH":"POST";showToast("☁️ 上传中...");fetch(url,{method,headers:{"Authorization":"Bearer "+tk,"Content-Type":"application/json"},body:JSON.stringify({description:"日记本备份",public:false,files:{"diary-backup.json":{content:data}}})}).then(r=>r.json()).then(j=>{if(j.id){saveGistId(j.id);showToast("✅ 上传成功!")}else showToast("❌ "+(j.message||"失败"))}).catch(e=>showToast("❌ 网络错误"))}
+function downloadFromGist(){syncToken();var tk=getGhToken();var id=getGistId();if(!tk){showToast("请先输入 GitHub Token");return}if(!id){showToast("请先上传一次以创建 Gist");return}showToast("📥 下载中...");fetch("https://api.github.com/gists/"+id,{headers:{"Authorization":"Bearer "+tk}}).then(r=>r.json()).then(j=>{if(j.files&&j.files["diary-backup.json"]){try{var d=JSON.parse(j.files["diary-backup.json"].content);D=d;sD();renderTimeline();showToast("✅ 已恢复 "+Object.keys(D).length+" 篇日记")}catch(e){showToast("❌ 数据解析失败")}}else showToast("❌ 未找到备份")}).catch(e=>showToast("❌ 网络错误"))}
+var _os=os;os=function(){_os();restoreToken()};
+
+init();sAT();
+</script>
+</body>
+</html>
