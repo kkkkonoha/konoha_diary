@@ -158,7 +158,7 @@ body { font-family: var(--font-family); background: var(--bg-body); color: var(-
 <div class="sba"><button onclick="ts()" id="sb">📅 倒序</button><button class="bi" onclick="os()" title="设置">⚙️</button></div>
 </div>
 <div class="ma">
-<div class="tb"><button class="mb" onclick="togSidebar()" id="mbBtn">☰</button><div class="tbl"><h2 id="tt2">📝 日记</h2></div><div class="tbr" id="tba2" style="display:none"><button id="mtb" onclick="tm()">👁 预览</button><button class="db" onclick="cdel()">🗑 删除</button></div></div>
+<div class="tb"><button class="mb" onclick="togSidebar()" id="mbBtn">☰</button><button class="nb" onclick="nd()" id="nbBtn">✏️</button><div class="tbl"><h2 id="tt2">📝 日记</h2></div><div class="tbr" id="tba2" style="display:none"><button id="mtb" onclick="tm()">👁 预览</button><button class="db" onclick="cdel()">🗑 删除</button></div></div>
 <div class="ca" id="ca">
 <div class="es" id="es"><div class="ic">📖</div><h3>还没有日记</h3><p>点左侧「写日记」按钮，记录今天的心情吧 ✨</p></div>
 <div class="ec" id="ec2" style="display:none"><div class="ed" id="ed2"></div><textarea class="et" id="et2" placeholder="用 Markdown 写下你的想法…&#10;&#10;支持：# 标题、**加粗**、*斜体*、> 引用、- 列表、&#96;&#96;&#96;代码块&#96;&#96;&#96;--- 分割线"></textarea></div>
@@ -179,7 +179,7 @@ body { font-family: var(--font-family); background: var(--bg-body); color: var(-
 </div>
 <div class="co" id="co"><div class="cd"><p id="cm">确定要删除这篇日记吗？</p><div class="ca2"><button onclick="cc()">取消</button><button class="cy" onclick="exd()">确定删除</button></div></div></div>
 <div class="tt" id="tt"></div>
-<script>var D={},CI=null,IE=true,S={t:"warm",f:"serif",s:"desc",dm:"edit",df:"cn",nn:"我的日记本"};
+<script>document.addEventListener('touchstart',function(){},false);var D={},CI=null,IE=true,S={t:"warm",f:"serif",s:"desc",dm:"edit",df:"cn",nn:"我的日记本"};
 var VS=document.documentElement.style;
 function init(){lS();lD();aT(S.t);aF(S.f);aUI();rT();if(!CI)shE();}
 function lD(){try{var d=localStorage.getItem("d");D=d?JSON.parse(d):{}}catch(e){D={}}}
@@ -227,7 +227,7 @@ function sd(id){if(CI){var c=document.getElementById("et2").value;if(c.trim()){D
 function nd(){if(CI){var c=document.getElementById("et2").value;if(c.trim()){D[CI]=c;sD();}}var ky=gTK();if(!D[ky]){D[ky]="";sD();}CI=ky;document.getElementById("et2").value="";document.getElementById("ed2").textContent="📅 "+fD(ky);document.getElementById("pd2").textContent="📅 "+fD(ky);document.getElementById("tt2").textContent="📝 "+fD(ky);document.getElementById("tba2").style.display="flex";document.getElementById("es").style.display="none";IE=S.dm==="edit";aM();rP("");rT();setTimeout(function(){document.getElementById("et2").focus();},100);shT("📝 新建日记");}
 function tm(){if(IE&&CI){var c=document.getElementById("et2").value;D[CI]=c;sD();rP(c);}IE=!IE;aM();}
 function aM(){document.getElementById("ec2").style.display=IE?"flex":"none";document.getElementById("pc2").style.display=IE?"none":"block";document.getElementById("mtb").textContent=IE?"👁 预览":"✏️ 编辑";}
-function rP(ct){if(!ct||!ct.trim()){document.getElementById("pc3").innerHTML='<p style="color:var(--text-muted);font-style:italic;">（空日记）</p>';return;}try{document.getElementById("pc3").innerHTML=marked.parse(ct,{breaks:true,gfm:true});}catch(e){document.getElementById("pc3").innerHTML='<p style="color:var(--danger);">渲染出错</p>';}}
+function rP(ct){if(typeof marked==='undefined'){document.getElementById('pc3').innerHTML='<p style=color:var(--d);>加载失败</p>';return}if(!ct||!ct.trim()){document.getElementById("pc3").innerHTML='<p style="color:var(--text-muted);font-style:italic;">（空日记）</p>';return;}try{document.getElementById("pc3").innerHTML=marked.parse(ct,{breaks:true,gfm:true});}catch(e){document.getElementById("pc3").innerHTML='<p style="color:var(--danger);">渲染出错</p>';}}
 var PD=null;
 function cdel(){if(!CI)return;PD=CI;document.getElementById("cm").textContent="确定要删除 "+fD(CI)+" 的日记吗？";document.getElementById("co").classList.add("sh");}
 function cc(){document.getElementById("co").classList.remove("sh");PD=null;}
@@ -253,7 +253,7 @@ function uploadToGist(){syncToken();var tk=getGhToken();if(!tk){showToast("请�
 function downloadFromGist(){syncToken();var tk=getGhToken();var id=getGistId();if(!tk){showToast("请先输入 GitHub Token");return}if(!id){showToast("请先上传一次以创建 Gist");return}showToast("📥 下载中...");fetch("https://api.github.com/gists/"+id,{headers:{"Authorization":"Bearer "+tk}}).then(r=>r.json()).then(j=>{if(j.files&&j.files["diary-backup.json"]){try{var d=JSON.parse(j.files["diary-backup.json"].content);D=d;sD();renderTimeline();showToast("✅ 已恢复 "+Object.keys(D).length+" 篇日记")}catch(e){showToast("❌ 数据解析失败")}}else showToast("❌ 未找到备份")}).catch(e=>showToast("❌ 网络错误"))}
 var _os=os;os=function(){_os();restoreToken()};
 
-init();sAT();
+try{init();sAT();}catch(e){document.body.innerHTML='<div style=padding:30px;text-align:center;color:red><h3>加载失败</h3><p>'+e.message+'</p></div>'}
 </script>
 </body>
 </html>
